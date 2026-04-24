@@ -106,8 +106,8 @@ server:
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(cfg.Server.ApiKey) != 2 {
-		t.Errorf("expected 2 api keys, got %d", len(cfg.Server.ApiKey))
+	if len(cfg.Server.UnsafeApiKey) != 2 {
+		t.Errorf("expected 2 api keys, got %d", len(cfg.Server.UnsafeApiKey))
 	}
 }
 

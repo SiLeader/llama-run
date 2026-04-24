@@ -55,7 +55,7 @@ func TestServerConfig_Visit_ApiPrefix(t *testing.T) {
 
 func TestServerConfig_Visit_ApiKey_Single(t *testing.T) {
 	cfg := defaultServerConfig()
-	cfg.ApiKey = []string{"secret"}
+	cfg.UnsafeApiKey = []string{"secret"}
 	b := newMockBuilder()
 	if err := cfg.Visit(b); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -67,7 +67,7 @@ func TestServerConfig_Visit_ApiKey_Single(t *testing.T) {
 
 func TestServerConfig_Visit_ApiKey_Multiple(t *testing.T) {
 	cfg := defaultServerConfig()
-	cfg.ApiKey = []string{"key1", "key2"}
+	cfg.UnsafeApiKey = []string{"key1", "key2"}
 	b := newMockBuilder()
 	if err := cfg.Visit(b); err != nil {
 		t.Fatalf("unexpected error: %v", err)

@@ -16,7 +16,7 @@ server:
   reusePort: false
   apiPrefix: null
   staticPath: null
-  apiKey: []
+  unsafeApiKey: []
   apiKeyFile: null
   tls: null
 features:

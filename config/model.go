@@ -121,6 +121,12 @@ func (c *RouterModelsConfig) Visit(builder builder.ApplicationBuilder) error {
 			} else if model.HuggingFace != nil {
 				dlType = downloader.TypeHuggingFace
 				m = *model.HuggingFace
+			} else if model.Path != nil {
+				// Just copy the file if it's a local path
+				if _, err := os.Stat(*model.Path); os.IsNotExist(err) {
+					return os.Symlink(*model.Path, modelPath)
+				}
+				return nil
 			} else {
 				return fmt.Errorf("unknown downloader type: %v", model)
 			}
