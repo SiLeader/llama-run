@@ -117,11 +117,25 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 	}
 
 	defer result.Body.Close()
-	file, err := os.Create(destPath)
+	tmp := destPath + ".llamarunpartialdownload"
+	file, err := os.Create(tmp)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	isOpen := true
+	defer func() {
+		if isOpen {
+			file.Close()
+		}
+		os.Remove(tmp)
+	}()
 	_, err = io.Copy(file, result.Body)
-	return err
+	if err != nil {
+		return err
+	}
+	isOpen = false
+	if err := file.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, destPath)
 }
