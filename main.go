@@ -13,6 +13,7 @@ import (
 
 func main() {
 	configFile := flag.String("config", "/etc/llama-run/config.yaml", "Path to the config file")
+	dryRun := flag.Bool("dry-run", false, "Dry run")
 	flag.Parse()
 
 	cfg, err := loadConfig(*configFile)
@@ -23,9 +24,17 @@ func main() {
 	dlb := downloader.NewBuilder(cfg.Downloader)
 
 	ctx := context.Background()
-	llamaServer := builder.NewLlamaServerApplicationBuilder(ctx, cfg.LlamaServer, dlb)
+	llamaServer, err := builder.NewLlamaServerApplicationBuilder(ctx, cfg.LlamaServer, dlb)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	if err := cfg.Visit(llamaServer); err != nil {
 		log.Fatalln(err)
+	}
+
+	if *dryRun {
+		log.Println("Dry run mode enabled. No actions will be performed.")
+		return
 	}
 
 	if err := llamaServer.Exec(); err != nil {

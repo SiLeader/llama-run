@@ -2,15 +2,15 @@ package huggingface
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/sileader/llama-run/downloader/checksum"
 )
 
 type Downloader struct {
@@ -26,9 +26,11 @@ func NewDownloader() *Downloader {
 
 func newDownloaderWithBaseURL(token, baseURL string) *Downloader {
 	return &Downloader{
-		token:      token,
-		baseURL:    baseURL,
-		httpClient: &http.Client{},
+		token:   token,
+		baseURL: baseURL,
+		httpClient: &http.Client{
+			Timeout: 1 * time.Minute,
+		},
 	}
 }
 
@@ -57,8 +59,19 @@ func parseModel(model string) (string, string, error) {
 }
 
 func (c *Downloader) downloadWithVerify(ctx context.Context, repo, filename, destPath, expectedSHA256 string) error {
-	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
-		return err
+	// キャッシュ済みの場合もチェックサムを検証
+	if _, err := os.Stat(destPath); err == nil {
+		slog.DebugContext(ctx, "Cache hit", "repo", repo, "filename", filename)
+		sum, err := checksum.ChecksumFile(destPath)
+		if err != nil {
+			return err
+		}
+		if sum == expectedSHA256 {
+			return nil // 正常
+		}
+		// 壊れているので再ダウンロード
+		slog.InfoContext(ctx, "Checksum mismatch, redownloading", "repo", repo, "filename", filename)
+		os.Remove(destPath)
 	}
 
 	url := fmt.Sprintf("%s/%s/resolve/main/%s", c.baseURL, repo, filename)
@@ -94,17 +107,15 @@ func (c *Downloader) downloadWithVerify(ctx context.Context, repo, filename, des
 		os.Remove(tmp) // エラー時の掃除（Rename後は空振り）
 	}()
 
-	h := sha256.New()
+	writer := checksum.NewSha256FileWriter(f)
 	// ファイルへの書き込みとハッシュ計算を同時に行う
-	writer := io.MultiWriter(f, h)
 	if _, err := io.Copy(writer, resp.Body); err != nil {
 		return err
 	}
 	slog.DebugContext(ctx, "Download complete")
 
-	sum := hex.EncodeToString(h.Sum(nil))
-	if expectedSHA256 != "" && sum != expectedSHA256 {
-		return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedSHA256, sum)
+	if err := writer.CheckDigest(expectedSHA256); err != nil {
+		return err
 	}
 
 	slog.DebugContext(ctx, "Moving to final location", "dest", destPath)

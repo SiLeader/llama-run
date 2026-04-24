@@ -1,5 +1,5 @@
 llamaServer:
-  executable: /usr/bin/llama-server
+  executable: llama-server
   arguments: []
   directory:
     model: /var/lib/llama-server/model

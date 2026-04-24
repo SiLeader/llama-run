@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/sileader/llama-run/downloader/checksum"
 )
 
 type Downloader struct {
@@ -107,6 +109,27 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 		return err
 	}
 
+	// キャッシュ済みの場合もチェックサムを検証
+	if _, err := os.Stat(destPath); err == nil {
+		slog.DebugContext(ctx, "Cache hit", "bucket", bucket, "key", key)
+
+		meta, err := d.client.HeadObject(ctx, &s3.HeadObjectInput{Bucket: &bucket, Key: &key})
+		if err != nil {
+			return err
+		}
+
+		sum, err := checksum.ChecksumFile(destPath)
+		if err != nil {
+			return err
+		}
+		if meta.ChecksumSHA256 != nil && sum == *meta.ChecksumSHA256 {
+			return nil // 正常
+		}
+		// 壊れているので再ダウンロード
+		slog.InfoContext(ctx, "Checksum mismatch, redownloading", "bucket", bucket, "key", key)
+		os.Remove(destPath)
+	}
+
 	result, err := d.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket:       &bucket,
 		Key:          &key,
@@ -129,10 +152,18 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 		}
 		os.Remove(tmp)
 	}()
-	_, err = io.Copy(file, result.Body)
+
+	writer := checksum.NewSha256FileWriter(file)
+
+	_, err = io.Copy(writer, result.Body)
 	if err != nil {
 		return err
 	}
+	slog.DebugContext(ctx, "Download complete")
+	if err := writer.CheckDigest(*result.ChecksumSHA256); err != nil {
+		return err
+	}
+
 	isOpen = false
 	if err := file.Close(); err != nil {
 		return err

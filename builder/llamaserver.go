@@ -30,18 +30,23 @@ type directoryConfig struct {
 	Config string `yaml:"config"`
 }
 
-func NewLlamaServerApplicationBuilder(ctx context.Context, config LlamaServerConfig, dlb downloader.Builder) *LlamaServerApplicationBuilder {
+func NewLlamaServerApplicationBuilder(ctx context.Context, config LlamaServerConfig, dlb downloader.Builder) (*LlamaServerApplicationBuilder, error) {
 	cmd := exec.Command(config.Executable, config.Arguments...)
 	cmd.Env = os.Environ()
 
+	if _, err := os.Stat(cmd.Path); os.IsNotExist(err) {
+		return nil, fmt.Errorf("executable '%s' not found", cmd.Path)
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
-	return &LlamaServerApplicationBuilder{
+	builder := &LlamaServerApplicationBuilder{
 		cmd:       cmd,
 		eg:        eg,
 		ctx:       ctx,
 		directory: config.Directory,
 		dlb:       dlb,
 	}
+	return builder, nil
 }
 
 func (b *LlamaServerApplicationBuilder) Exec() error {

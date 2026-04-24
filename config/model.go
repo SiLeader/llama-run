@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/sileader/llama-run/builder"
@@ -94,9 +95,13 @@ func (c *RouterModelsConfig) Visit(builder builder.ApplicationBuilder) error {
 			Model:        nil,
 		}
 	}
+	modelDir := builder.GetModelDirectory()
+	if err := os.MkdirAll(filepath.Dir(modelDir), 0755); err != nil {
+		return err
+	}
 
 	for _, model := range c.Models {
-		modelPath := path.Join(builder.GetModelDirectory(), fmt.Sprintf("%s.gguf", model.Alias))
+		modelPath := path.Join(modelDir, fmt.Sprintf("%s.gguf", model.Alias))
 		info := router.Info{
 			ChatTemplate: nil,
 			GpuLayers:    nil,
@@ -124,6 +129,7 @@ func (c *RouterModelsConfig) Visit(builder builder.ApplicationBuilder) error {
 			if err != nil {
 				return err
 			}
+
 			return dlr.Download(ctx, modelPath, m)
 		})
 	}

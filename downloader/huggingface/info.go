@@ -2,14 +2,10 @@ package huggingface
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -55,19 +51,4 @@ func (c *Downloader) fetchFileInfo(ctx context.Context, repo, quantize string) (
 		}
 	}
 	return nil, fmt.Errorf("quantized model %s not found in repo %s", quantize, repo)
-}
-
-func checksumFile(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(h.Sum(nil)), nil
 }
