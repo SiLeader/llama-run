@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/sileader/llama-run/builder"
@@ -96,7 +95,7 @@ func (c *RouterModelsConfig) Visit(builder builder.ApplicationBuilder) error {
 		}
 	}
 	modelDir := builder.GetModelDirectory()
-	if err := os.MkdirAll(filepath.Dir(modelDir), 0755); err != nil {
+	if err := os.MkdirAll(modelDir, 0755); err != nil {
 		return err
 	}
 

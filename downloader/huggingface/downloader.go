@@ -29,7 +29,9 @@ func newDownloaderWithBaseURL(token, baseURL string) *Downloader {
 		token:   token,
 		baseURL: baseURL,
 		httpClient: &http.Client{
-			Timeout: 1 * time.Minute,
+			Transport: &http.Transport{
+				ResponseHeaderTimeout: 10 * time.Second,
+			},
 		},
 	}
 }

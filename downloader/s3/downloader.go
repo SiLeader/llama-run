@@ -160,8 +160,10 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 		return err
 	}
 	slog.DebugContext(ctx, "Download complete")
-	if err := writer.CheckDigest(*result.ChecksumSHA256); err != nil {
-		return err
+	if result.ChecksumSHA256 != nil {
+		if err := writer.CheckDigest(*result.ChecksumSHA256); err != nil {
+			return err
+		}
 	}
 
 	isOpen = false

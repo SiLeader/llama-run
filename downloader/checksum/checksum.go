@@ -38,12 +38,7 @@ func NewSha256FileWriter(writer io.Writer) *Sha256FileWriter {
 }
 
 func (w *Sha256FileWriter) Write(p []byte) (int, error) {
-	n, err := w.writer.Write(p)
-	if err != nil {
-		return n, err
-	}
-	w.hash.Write(p[:n])
-	return n, nil
+	return w.writer.Write(p)
 }
 
 func (w *Sha256FileWriter) CheckDigest(sum string) error {
