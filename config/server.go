@@ -58,6 +58,11 @@ func (c *ServerConfig) Visit(builder builder.ApplicationBuilder) error {
 	if c.StaticPath != nil {
 		builder.AddArguments("--path", *c.StaticPath)
 	}
+	if c.Tls != nil {
+		if err := c.Tls.Visit(builder); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

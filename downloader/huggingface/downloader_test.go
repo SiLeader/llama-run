@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/sileader/llama-run/downloader/checksum"
 )
 
 func TestParseModel_Valid(t *testing.T) {
@@ -102,12 +104,15 @@ func TestDownloadWithVerify_NoChecksum(t *testing.T) {
 	}))
 	defer srv.Close()
 
+	sha256sumBytes := sha256.Sum256(content)
+	sha256sum := hex.EncodeToString(sha256sumBytes[:])
+
 	dl := newDownloaderWithBaseURL("", srv.URL)
 	dir := t.TempDir()
 	dest := filepath.Join(dir, "model.gguf")
 
 	// empty expectedSHA -> skip checksum verification
-	if err := dl.downloadWithVerify(context.Background(), "org/repo", "model.gguf", dest, ""); err != nil {
+	if err := dl.downloadWithVerify(context.Background(), "org/repo", "model.gguf", dest, sha256sum); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if _, err := os.Stat(dest); err != nil {
@@ -214,7 +219,7 @@ func TestChecksumFile(t *testing.T) {
 	}
 	f.Close()
 
-	sum, err := checksumFile(f.Name())
+	sum, err := checksum.ChecksumFile(f.Name())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -95,10 +95,10 @@ func TestConfig_Visit_ProducesArgs(t *testing.T) {
 	}
 }
 
-func TestUnmarshalConfig_ApiKeys(t *testing.T) {
+func TestUnmarshalConfig_UnsafeApiKeys(t *testing.T) {
 	yaml := `
 server:
-  apiKey:
+  unsafeApiKey:
     - key1
     - key2
 `
