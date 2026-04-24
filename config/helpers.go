@@ -6,6 +6,11 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
+type NumberOrString interface {
+	IsNumber() bool
+	IsStringAndEquals(value string) bool
+}
+
 type IntOrString struct {
 	IntVal *int
 	StrVal *string
@@ -39,6 +44,14 @@ func NewIntOrStringForInt(i int) IntOrString {
 	return IntOrString{IntVal: &i}
 }
 
+func (v *IntOrString) IsNumber() bool {
+	return v.IntVal != nil
+}
+
+func (v *IntOrString) IsStringAndEquals(value string) bool {
+	return v.StrVal != nil && *v.StrVal == value
+}
+
 type FloatOrString struct {
 	FloatVal *float64
 	StrVal   *string
@@ -66,4 +79,12 @@ func (v *FloatOrString) UnmarshalYAML(node *yaml.Node) error {
 
 func NewFloatOrStringForString(s string) FloatOrString {
 	return FloatOrString{StrVal: &s}
+}
+
+func (v *FloatOrString) IsNumber() bool {
+	return v.FloatVal != nil
+}
+
+func (v *FloatOrString) IsStringAndEquals(value string) bool {
+	return v.StrVal != nil && *v.StrVal == value
 }

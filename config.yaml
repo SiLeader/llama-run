@@ -1,0 +1,79 @@
+llamaServer:
+  executable: /usr/bin/llama-server
+  arguments: []
+  directory:
+    model: /var/lib/llama-server/model
+    config: /var/lib/llama-server/config
+downloader:
+  s3:
+    region: us-east-1
+    endpoint: null
+    accessKeyEnv: null
+    secretKeyEnv: null
+server:
+  host: 0.0.0.0
+  port: 8080
+  reusePort: false
+  apiPrefix: null
+  staticPath: null
+  apiKey: []
+  apiKeyFile: null
+  tls: null
+features:
+  embedding:
+    enabled: false
+    pooling: null
+  rerank:
+    enabled: false
+  metrics:
+    enabled: false
+  properties:
+    enabled: false
+  jinja:
+    enabled: false
+log:
+  enabled: true
+  file: null
+  level: Info
+  timestamp: true
+  color: Auto
+chat:
+  template: null
+  templateFile: null
+  templateArguments: {}
+reasoning:
+  mode: Auto
+  format: Auto
+  budget: Unrestricted
+  budgetMessage: ""
+device:
+  cpu:
+    threads: Auto
+  memory:
+    mmap: true
+  gpu:
+    layers: Auto
+    mainIndex: 0
+model:
+  alias: null
+  aliases: []
+  docker: null
+  huggingFace: null
+  router:
+    default:
+      context: null
+      gpuLayers: null
+    models:
+      - alias: gemma4-e4b
+        huggingFace: ggml-org/gemma-4-E4B-it-GGUF:Q4_K_M
+sampling:
+  samplers: null
+  seed: Random
+  temperature: null
+  topK: null
+  topP: null
+  minP: null
+  repeatLastN: 64
+  repeatPenalty: Disabled
+  presencePenalty: Disabled
+  frequencyPenalty: Disabled

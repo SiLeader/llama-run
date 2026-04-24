@@ -1,5 +1,12 @@
 package config
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/sileader/llama-run/builder"
+)
+
 type ServerConfig struct {
 	Host       string     `yaml:"host"`
 	Port       int        `yaml:"port"`
@@ -27,4 +34,40 @@ func defaultServerConfig() ServerConfig {
 		ApiKeyFile: nil,
 		Tls:        nil,
 	}
+}
+
+func (c *ServerConfig) Visit(builder builder.ApplicationBuilder) error {
+	if c == nil {
+		return nil
+	}
+	builder.AddArguments("--host", c.Host)
+	builder.AddArguments("--port", fmt.Sprintf("%d", c.Port))
+	if c.ReusePort {
+		builder.AddArguments("--reuse-port")
+	}
+	if c.ApiPrefix != nil {
+		builder.AddArguments("--api-prefix", *c.ApiPrefix)
+	}
+	if len(c.ApiKey) > 0 {
+		apiKey := strings.Join(c.ApiKey, ",")
+		builder.AddArguments("--api-key", apiKey)
+	}
+	if c.ApiKeyFile != nil {
+		builder.AddArguments("--api-key-file", *c.ApiKeyFile)
+	}
+	if c.StaticPath != nil {
+		builder.AddArguments("--path", *c.StaticPath)
+	}
+
+	return nil
+}
+
+func (c *TlsConfig) Visit(builder builder.ApplicationBuilder) error {
+	if c == nil {
+		return nil
+	}
+	builder.AddArguments("--ssl-key-file", c.KeyFile)
+	builder.AddArguments("--ssl-cert-file", c.CertFile)
+
+	return nil
 }
