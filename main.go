@@ -20,12 +20,12 @@ func main() {
 
 	cfg, err := loadConfig(*configFile)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Failed to load config: %v\n", err)
 	}
 
 	logLevel := slog.LevelInfo
 	if err := logLevel.UnmarshalText([]byte(strings.ToLower(cfg.Log.Level))); err != nil {
-		slog.Debug("Invalid log level, falling back to info: ", err)
+		log.Printf("Invalid log level, falling back to info: %v\n", err)
 	}
 	slog.SetLogLoggerLevel(logLevel)
 
@@ -34,20 +34,20 @@ func main() {
 	ctx := context.Background()
 	llamaServer, err := builder.NewLlamaServerApplicationBuilder(ctx, cfg.LlamaServer, dlb)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Failed to create llama server application builder: %v\n", err)
 	}
 	if err := cfg.Visit(llamaServer); err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Failed to visit config: %v\n", err)
 	}
 
 	if *dryRun {
-		log.Println("Dry run mode enabled. No actions will be performed.")
+		slog.Info("Dry run mode enabled. No actions will be performed.")
 		return
 	}
 
 	slog.Info("Starting llama-server")
 	if err := llamaServer.Exec(); err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Failed to start llama-server: %v\n", err)
 	}
 }
 

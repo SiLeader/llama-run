@@ -138,8 +138,8 @@ func TestDownloadWithVerify_HTTPError(t *testing.T) {
 func TestFetchFileInfo_Found(t *testing.T) {
 	info := modelInfo{
 		Siblings: []fileInfo{
-			{RFilename: "model-Q4_K_M.gguf", SHA256: "abc123"},
-			{RFilename: "model-Q8_0.gguf", SHA256: "def456"},
+			{RFilename: "model-Q4_K_M.gguf", Lfs: fileLfsInfo{SHA256: "abc123"}},
+			{RFilename: "model-Q8_0.gguf", Lfs: fileLfsInfo{SHA256: "def456"}},
 		},
 	}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -156,15 +156,15 @@ func TestFetchFileInfo_Found(t *testing.T) {
 	if fi.RFilename != "model-Q4_K_M.gguf" {
 		t.Errorf("expected model-Q4_K_M.gguf, got %s", fi.RFilename)
 	}
-	if fi.SHA256 != "abc123" {
-		t.Errorf("expected abc123, got %s", fi.SHA256)
+	if fi.Lfs.SHA256 != "abc123" {
+		t.Errorf("expected abc123, got %s", fi.Lfs.SHA256)
 	}
 }
 
 func TestFetchFileInfo_NotFound(t *testing.T) {
 	info := modelInfo{
 		Siblings: []fileInfo{
-			{RFilename: "model-Q8_0.gguf", SHA256: "def456"},
+			{RFilename: "model-Q8_0.gguf", Lfs: fileLfsInfo{SHA256: "def456"}},
 		},
 	}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
