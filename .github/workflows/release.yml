@@ -73,6 +73,34 @@ jobs:
   build-container:
     needs: verify
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - version: "b8925"
+            arch: "x64"
+            docker-arch: "amd64"
+            checksum: "e50407e42b1db107e7a6781efc6b9a1b37c3958931b3d2d0e6bafd3ca6b8c62a"
+          - version: "b8925"
+            arch: "vulkan-x64"
+            docker-arch: "amd64"
+            checksum: "13b2e98a47a75d112ac73057a178327743c0bb1a0ebd8cdbcb906a6e00cc489f"
+          - version: "b8925"
+            arch: "openvino-2026.0-x64"
+            docker-arch: "amd64"
+            checksum: "1cbbcb833bdc9da5d2c270ffa91d5ea31cc4aa37335983e7a52c521789b5541c"
+          - version: "b8925"
+            arch: "rocm-7.2-x64"
+            docker-arch: "amd64"
+            checksum: "810b72a52bd7eb021f298b0528c0d2c152b958b7e60ee343ca5b74ffa9ac8654"
+
+          - version: "b8925"
+            arch: "arm64"
+            docker-arch: "arm64"
+            checksum: "83c6c5f2055bfda839c66c95338dba9d27f86d498222ea5d9e3a6fdb2ca7e6c7"
+          - version: "b8925"
+            arch: "vulkan-arm64"
+            docker-arch: "arm64"
+            checksum: "d62f57519fc1fc197606f3ab6cabc058a3ca2fbada0888f17d65b583bdcedb4b"
 
     steps:
       - name: Checkout repository
@@ -97,20 +125,22 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=tag
-            type=raw,value=latest
+            type=ref,event=tag,suffix=-${{ matrix.version }}-${{ matrix.arch }}
 
       - name: Build and push container image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: "linux/${{ matrix.docker-arch }}"
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             git_commit=${{ github.sha }}
+            llama_cpp_tag=${{ matrix.version }}
+            llama_cpp_arch=${{ matrix.arch }}
+            llama_cpp_checksum=${{ matrix.checksum }}
 
   publish-release:
     needs:

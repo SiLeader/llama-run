@@ -121,7 +121,7 @@ func getCpuThreads() (threads int) {
 			if sl[0] == "max" {
 				continue
 			}
-			allowdUs, err := strconv.ParseInt(sl[0], 10, 64)
+			allowedUs, err := strconv.ParseInt(sl[0], 10, 64)
 			if err != nil {
 				slog.Warn("failed to parse CPU allowed micro secs", "error", err)
 				return
@@ -132,7 +132,7 @@ func getCpuThreads() (threads int) {
 				return
 			}
 
-			threads = int(max(allowdUs/unitUs, 1))
+			threads = int(max(allowedUs/unitUs, 1))
 
 			return
 		}

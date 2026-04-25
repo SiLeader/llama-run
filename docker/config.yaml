@@ -1,0 +1,9 @@
+llamaServer:
+  executable: llama-server
+  arguments: []
+  directory:
+    model: /var/lib/llama-server/model
+    config: /var/lib/llama-server/config
+server:
+  host: 0.0.0.0
+  port: 8080
