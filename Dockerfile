@@ -50,6 +50,5 @@ COPY config.yaml /etc/llama-run/config.yaml
 WORKDIR /opt/llama.cpp
 
 EXPOSE 8080
-USER 1000:1000
 
 CMD ["/usr/local/bin/llama-run"]

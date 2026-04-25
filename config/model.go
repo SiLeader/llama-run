@@ -124,9 +124,9 @@ func (c *RouterModelsConfig) Visit(builder builder.ApplicationBuilder) error {
 			} else if model.Path != nil {
 				// Just copy the file if it's a local path
 				if _, err := os.Stat(*model.Path); os.IsNotExist(err) {
-					return os.Symlink(*model.Path, modelPath)
+					return fmt.Errorf("model file not found: %s", *model.Path)
 				}
-				return nil
+				return os.Symlink(*model.Path, modelPath)
 			} else {
 				return fmt.Errorf("unknown downloader type: %v", model)
 			}

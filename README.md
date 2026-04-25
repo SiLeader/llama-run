@@ -10,7 +10,7 @@ Instead of assembling a long list of command-line flags, you write a structured 
 
 - **Declarative YAML configuration** — express every `llama-server` flag through a structured config file.
 - **Process replacement via `syscall.Exec`** — no wrapper process is left behind; `llama-server` inherits the PID directly, which plays nicely with Docker, Kubernetes, and systemd.
-- **Automatic model download** — fetch models from Hugging Face or S3 (including S3-compatible storage). Hugging Face downloads are verified against their published SHA-256.
+- **Automatic model download** — fetch models from Hugging Face or S3 (including S3-compatible storage). Downloads are verified against their published SHA-256.
 - **Multi-model routing** — assign aliases to multiple models and let `llama-server`'s `--models-preset` feature switch between them. The `preset.ini` file is generated automatically.
 - **cgroup-aware CPU thread detection** — when `threads: Auto` is set, `/sys/fs/cgroup/cpu.max` is consulted so the CPU share assigned to a container is respected.
 
@@ -37,7 +37,7 @@ Prebuilt binaries are distributed via GitHub Releases. Install `llama-server` se
 go build -o llama-run .
 ```
 
-Go 1.26 or later is required.
+Go 1.25 or later is required.
 
 ## Usage
 
@@ -72,7 +72,7 @@ server:
   reusePort: false
   apiPrefix: null
   staticPath: null
-  apiKey: []
+  unsafeApiKey: []
   apiKeyFile: null
   tls: null                  # { certFile: ..., keyFile: ... }
 
