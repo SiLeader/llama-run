@@ -38,6 +38,13 @@ func NewLlamaServerApplicationBuilder(ctx context.Context, config LlamaServerCon
 		return nil, fmt.Errorf("executable '%s' not found", cmd.Path)
 	}
 
+	if err := os.MkdirAll(config.Directory.Model, 0755); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(config.Directory.Config, 0755); err != nil {
+		return nil, err
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
 	builder := &LlamaServerApplicationBuilder{
 		cmd:       cmd,

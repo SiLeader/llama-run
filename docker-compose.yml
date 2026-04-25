@@ -1,0 +1,24 @@
+services:
+  llama-server:
+    build: .
+    ports:
+      - "8080:8080"
+    user: "1000:1000"
+    volumes:
+      - data:/var/lib/llama-server:rw
+      - ./config.yaml:/etc/llama-run/config.yaml:ro
+  init:
+    image: ubuntu:24.04
+    volumes:
+      - data:/data:rw
+    command:
+      - bash
+      - -c
+      - chown -R 1000:1000 /data
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      device: data
+      o: bind

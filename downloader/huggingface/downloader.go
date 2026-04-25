@@ -45,7 +45,7 @@ func (c *Downloader) Download(ctx context.Context, destPath string, model string
 	if err != nil {
 		return err
 	}
-	return c.downloadWithVerify(ctx, repo, info.RFilename, destPath, info.SHA256)
+	return c.downloadWithVerify(ctx, repo, info.RFilename, destPath, info.Lfs.SHA256)
 }
 
 func parseModel(model string) (string, string, error) {
@@ -61,19 +61,26 @@ func parseModel(model string) (string, string, error) {
 }
 
 func (c *Downloader) downloadWithVerify(ctx context.Context, repo, filename, destPath, expectedSHA256 string) error {
+	slog.InfoContext(ctx, "Downloading model from Hugging Face", "repo", repo, "filename", filename, "dest", destPath)
+	if len(expectedSHA256) == 0 {
+		slog.WarnContext(ctx, "No expected SHA256 provided, skipping verification", "repo", repo, "filename", filename)
+	}
 	// キャッシュ済みの場合もチェックサムを検証
-	if _, err := os.Stat(destPath); err == nil {
-		slog.DebugContext(ctx, "Cache hit", "repo", repo, "filename", filename)
-		sum, err := checksum.ChecksumFile(destPath)
-		if err != nil {
-			return err
+	if len(expectedSHA256) > 0 {
+		if _, err := os.Stat(destPath); err == nil {
+			slog.DebugContext(ctx, "Cache hit", "repo", repo, "filename", filename)
+			sum, err := checksum.ChecksumFile(destPath)
+			if err != nil {
+				return err
+			}
+			if sum == expectedSHA256 {
+				slog.InfoContext(ctx, "Checksum match, skipping download", "repo", repo, "filename", filename)
+				return nil // 正常
+			}
+			// 壊れているので再ダウンロード
+			slog.InfoContext(ctx, "Checksum mismatch, redownloading", "repo", repo, "filename", filename)
+			os.Remove(destPath)
 		}
-		if sum == expectedSHA256 {
-			return nil // 正常
-		}
-		// 壊れているので再ダウンロード
-		slog.InfoContext(ctx, "Checksum mismatch, redownloading", "repo", repo, "filename", filename)
-		os.Remove(destPath)
 	}
 
 	url := fmt.Sprintf("%s/%s/resolve/main/%s", c.baseURL, repo, filename)
@@ -116,8 +123,10 @@ func (c *Downloader) downloadWithVerify(ctx context.Context, repo, filename, des
 	}
 	slog.DebugContext(ctx, "Download complete")
 
-	if err := writer.CheckDigest(expectedSHA256); err != nil {
-		return err
+	if len(expectedSHA256) > 0 {
+		if err := writer.CheckDigest(expectedSHA256); err != nil {
+			return err
+		}
 	}
 
 	slog.DebugContext(ctx, "Moving to final location", "dest", destPath)

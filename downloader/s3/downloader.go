@@ -90,7 +90,7 @@ func newDownloaderForS3Compatible(
 	return &dlr, nil
 }
 
-func parseModel(model string) (string, string, error) {
+func parseModel(ctx context.Context, model string) (string, string, error) {
 	u, err := url.Parse(model)
 	if err != nil {
 		return "", "", err
@@ -100,11 +100,13 @@ func parseModel(model string) (string, string, error) {
 	}
 	bucket := u.Host
 	key := strings.TrimPrefix(u.Path, "/")
+	slog.DebugContext(ctx, "Parsed S3 model", "bucket", bucket, "key", key)
 	return bucket, key, nil
 }
 
 func (d *Downloader) Download(ctx context.Context, destPath string, model string) error {
-	bucket, key, err := parseModel(model)
+	slog.InfoContext(ctx, "Downloading model from S3", "model", model, "dest", destPath)
+	bucket, key, err := parseModel(ctx, model)
 	if err != nil {
 		return err
 	}
@@ -120,6 +122,7 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 
 		sum, err := checksum.ChecksumFile(destPath)
 		if err != nil {
+			slog.ErrorContext(ctx, "Failed to checksum file", "bucket", bucket, "key", key, "err", err)
 			return err
 		}
 		if meta.ChecksumSHA256 != nil && sum == *meta.ChecksumSHA256 {
@@ -130,12 +133,14 @@ func (d *Downloader) Download(ctx context.Context, destPath string, model string
 		os.Remove(destPath)
 	}
 
+	slog.DebugContext(ctx, "Downloading from S3", "bucket", bucket, "key", key)
 	result, err := d.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket:       &bucket,
 		Key:          &key,
 		ChecksumMode: types.ChecksumModeEnabled,
 	})
 	if err != nil {
+		slog.ErrorContext(ctx, "Failed to download from S3", "bucket", bucket, "key", key, "err", err)
 		return err
 	}
 

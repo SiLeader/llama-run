@@ -4,7 +4,9 @@ import (
 	"context"
 	"flag"
 	"log"
+	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/sileader/llama-run/builder"
 	"github.com/sileader/llama-run/config"
@@ -20,6 +22,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	logLevel := slog.LevelInfo
+	if err := logLevel.UnmarshalText([]byte(strings.ToLower(cfg.Log.Level))); err != nil {
+		slog.Debug("Invalid log level, falling back to info: ", err)
+	}
+	slog.SetLogLoggerLevel(logLevel)
 
 	dlb := downloader.NewBuilder(cfg.Downloader)
 
@@ -37,6 +45,7 @@ func main() {
 		return
 	}
 
+	slog.Info("Starting llama-server")
 	if err := llamaServer.Exec(); err != nil {
 		log.Fatalln(err)
 	}

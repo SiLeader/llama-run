@@ -34,7 +34,7 @@ features:
 log:
   enabled: true
   file: null
-  level: Info
+  level: Debug
   timestamp: true
   color: Auto
 chat:
@@ -43,7 +43,7 @@ chat:
   templateArguments: {}
 reasoning:
   mode: Auto
-  format: Auto
+  format: None
   budget: Unrestricted
   budgetMessage: ""
 device:

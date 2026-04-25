@@ -10,18 +10,22 @@ import (
 )
 
 type fileInfo struct {
-	RFilename string `json:"rfilename"`
-	SHA256    string `json:"sha256"`
+	RFilename string      `json:"rfilename"`
+	Lfs       fileLfsInfo `json:"lfs"`
 }
 
 type modelInfo struct {
 	Siblings []fileInfo `json:"siblings"`
 }
 
+type fileLfsInfo struct {
+	SHA256 string `json:"sha256"`
+}
+
 func (c *Downloader) fetchFileInfo(ctx context.Context, repo, quantize string) (*fileInfo, error) {
 	quantize = strings.ToLower(quantize)
 
-	url := fmt.Sprintf("%s/api/models/%s/revision/main", c.baseURL, repo)
+	url := fmt.Sprintf("%s/api/models/%s/revision/main?blobs=true", c.baseURL, repo)
 	slog.DebugContext(ctx, "Fetching file info", "url", url)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

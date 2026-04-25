@@ -29,7 +29,7 @@ docker run --rm -p 8080:8080 \
 
 ### Binary release
 
-Prebuilt binaries will be distributed via GitHub Releases. Install `llama-server` separately and point `llamaServer.executable` in `config.yaml` at its path.
+Prebuilt binaries are distributed via GitHub Releases. Install `llama-server` separately and point `llamaServer.executable` in `config.yaml` at its path.
 
 ### Build from source
 
