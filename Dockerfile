@@ -8,7 +8,7 @@ COPY . .
 
 RUN go build -o /llama-run
 
-FROM ubuntu:24.04 AS llama-cpp
+FROM ubuntu:26.04 AS llama-cpp
 
 ARG llama_cpp_tag="b8925"
 ARG llama_cpp_checksum="e50407e42b1db107e7a6781efc6b9a1b37c3958931b3d2d0e6bafd3ca6b8c62a"
@@ -30,7 +30,7 @@ RUN echo "Downloading llama.cpp version ${llama_cpp_tag}..." && \
     tar -xzf llama.tar.gz --strip-components=1 && \
     rm llama.tar.gz
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG git_commit="unknown"
 
