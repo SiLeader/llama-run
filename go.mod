@@ -1,6 +1,6 @@
 module github.com/sileader/llama-run
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.43.7
@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.36
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.2
 	go.yaml.in/yaml/v3 v3.0.5
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.24.0
 )
 
 require (
